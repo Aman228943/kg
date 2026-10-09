@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f3f7ff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0d1230" media="(prefers-color-scheme: dark)">
+  <title>7-А класс</title>
+  <script>document.documentElement.className = "js";</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #f3f7ff;
+      --grid: #d5e0f5;
+      --ink: #1d3fbf;
+      --ink-dark: #132a85;
+      --text: #1e2338;
+      --margin: #e5484d;
+      --marker: #ffe066;
+      --card: #fff;
+      --solid: #1d3fbf;
+      --solid-2: #132a85;
+      --hl: #ffe066;
+      --shadow: rgba(29, 63, 191, .18);
+      --foot: #132a85;
+      --hand: "Caveat", "Segoe Print", "Comic Sans MS", cursive;
+      --body: "Nunito", "Segoe UI", Arial, sans-serif;
+    }
+    /* Тёмная тема: ночная тетрадь */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --paper: #0d1230;
+        --grid: #1b2457;
+        --ink: #8ea6ff;
+        --ink-dark: #c3d0ff;
+        --text: #e8ecff;
+        --margin: #ff7b86;
+        --card: #161d47;
+        --solid: #2e47c4;
+        --solid-2: #4260e6;
+        --hl: rgba(255, 224, 102, .32);
+        --shadow: rgba(0, 0, 0, .45);
+        --foot: #070a1f;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--body); color: var(--text); line-height: 1.6;
+      background-color: var(--paper);
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+      background-size: 26px 26px;
+    }
+    ::selection { background: var(--marker); color: #1e2338; }
+
+    /* Обложка */
+    header { position: relative; overflow: hidden; padding: 40px 20px 28px; text-align: center; }
+    .cover { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 22px; text-align: left; }
+    .logo {
+      position: relative; width: 104px; height: 104px; flex: none; display: grid; place-items: center;
+      background: var(--solid); color: #fff; border-radius: 28px; transform: rotate(-6deg);
+      font-family: var(--hand); font-weight: 700; font-size: 56px; line-height: 1;
+      box-shadow: 5px 5px 0 var(--marker);
+      animation: logo-in .9s cubic-bezier(.3, 1.6, .5, 1), swing 4.5s ease-in-out .9s infinite;
+    }
+    .logo::after {
+      content: ""; position: absolute; inset: 0; border-radius: inherit; border: 3px solid var(--marker);
+      pointer-events: none; animation: ring 2.4s ease-out infinite;
+    }
+    header h1 { min-width: 0; font-family: var(--hand); font-size: clamp(36px, 8.5vw, 64px); line-height: 1; color: var(--ink-dark); }
+    .w { display: inline-block; animation: word-in .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(.25s + var(--d) * .14s); }
+    .spark {
+      position: absolute; z-index: 0; font-size: var(--s); line-height: 1; pointer-events: none; color: var(--c, var(--marker));
+      animation: float var(--t) ease-in-out infinite, twinkle 2.4s ease-in-out infinite; animation-delay: var(--d);
+    }
+
+    /* Бегущая лента */
+    .ticker {
+      background: var(--marker); color: #132a85; overflow: hidden; white-space: nowrap; padding: 6px 0; margin-bottom: 22px;
+      border-block: 2px dashed var(--ink); font-family: var(--hand); font-weight: 700; font-size: 26px; line-height: 1.3;
+    }
+    .track { display: inline-flex; animation: marquee 24s linear infinite; }
+    .track span { flex: none; }
+
+    main { max-width: 860px; margin: 0 auto; padding: 0 16px 24px; }
+
+    /* Живая плашка: какой сейчас урок */
+    .live {
+      position: sticky; top: 8px; z-index: 50; margin-bottom: 26px; padding: 12px 16px 14px;
+      border: 2px solid var(--ink); border-radius: 14px; background: var(--card); color: var(--text);
+      box-shadow: 5px 5px 0 var(--shadow);
+      transition: background .3s ease, color .3s ease;
+      animation: slide-down .6s cubic-bezier(.2, .8, .2, 1) .5s backwards;
+    }
+    .live-row { display: flex; align-items: center; gap: 12px; }
+    .dot { flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); animation: dot-pulse 1.6s ease-out infinite; }
+    #liveMain { display: block; font-weight: 800; font-size: 19px; line-height: 1.3; }
+    #liveSub { display: block; font-weight: 600; font-size: 15px; line-height: 1.3; opacity: .85; }
+    .bar { height: 8px; margin-top: 10px; border-radius: 99px; background: rgba(127, 127, 127, .25); overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--ink); transition: width 1s linear; }
+    .live[data-state="idle"] { border-style: dashed; }
+    .live[data-state="idle"] .bar { display: none; }
+    .live[data-state="lesson"] { background: var(--solid); color: #fff; border-color: var(--solid-2); box-shadow: 5px 5px 0 var(--marker); }
+    .live[data-state="lesson"] .dot { background: var(--marker); --pulse: 255, 224, 102; }
+    .live[data-state="lesson"] .bar i { background: var(--marker); }
+    .live[data-state="break"] { background: var(--marker); color: #1e2338; border-color: #1d3fbf; box-shadow: 5px 5px 0 #1d3fbf; }
+    .live[data-state="break"] .dot { background: #e5484d; --pulse: 229, 72, 77; }
+    .live[data-state="break"] .bar i { background: #1d3fbf; }
+
+    /* Тетрадные листы */
+    section {
+      position: relative; background: var(--card); margin-bottom: 26px; padding: 26px 24px 26px 56px;
+      border-radius: 6px 18px 18px 6px; border: 2px solid var(--ink);
+      box-shadow: 6px 6px 0 var(--shadow);
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    section:hover { transform: translate(-2px, -2px); box-shadow: 9px 9px 0 var(--shadow); }
+    section::before { /* красные поля тетради */
+      content: ""; position: absolute; top: 0; bottom: 0; left: 36px; width: 2px; background: var(--margin); opacity: .75;
+    }
+    h2 { font-family: var(--hand); font-size: 36px; line-height: 1.1; color: var(--ink); margin-bottom: 14px; }
+    h2 span { background: linear-gradient(transparent 58%, var(--hl) 58%); padding: 0 4px; }
+
+    /* Список учеников */
+    #students { list-style: none; counter-reset: n; display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+    #students li { counter-increment: n; display: flex; align-items: center; gap: 10px; }
+    #students li::before {
+      content: counter(n); min-width: 24px; font-family: var(--hand); font-size: 24px; color: var(--margin); text-align: right;
+      animation: num-wave 7s ease-in-out infinite; animation-delay: calc(var(--i) * 80ms + 2s); transition: scale .2s ease;
+    }
+    #students li:hover::before { scale: 1.5; }
+    #students button {
+      flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 800 17px var(--body); letter-spacing: .5px; padding: 10px 14px;
+      border: 2px solid var(--ink); border-radius: 12px; background: var(--card); color: var(--ink);
+      cursor: pointer; transition: transform .2s ease, background .15s ease, color .15s ease, opacity .25s ease;
+    }
+    #students button:hover { background: var(--solid); color: #fff; transform: translateY(-3px) rotate(-1.5deg); }
+    #students button:active { transform: scale(.94); }
+    #students:has(button:hover) button:not(:hover) { opacity: .55; }
+    #students button.starosta {
+      color: var(--marker); background-color: var(--solid);
+      background-image: linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, .3) 50%, transparent 60%);
+      background-size: 250% 100%; background-repeat: no-repeat; animation: shimmer 3.2s linear infinite;
+    }
+    #students button.starosta:hover { background-color: var(--solid-2); color: var(--marker); }
+    #students button:focus-visible, #card:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+
+    /* Уроки и классный руководитель */
+    ul.lessons { list-style: none; }
+    ul.lessons li { padding: 8px 0; border-bottom: 2px dashed var(--grid); font-weight: 600; transition: padding-left .2s ease, color .2s ease; }
+    ul.lessons li:hover { padding-left: 10px; color: var(--ink); }
+    ul.lessons li:last-child { border-bottom: 0; }
+    .teacher { font-size: 20px; font-weight: 800; line-height: 1.7; }
+    .teacher span {
+      background: linear-gradient(var(--hl), var(--hl)) no-repeat 0 88% / 100% 45%;
+      -webkit-box-decoration-break: clone; box-decoration-break: clone;
+      transition: background-size .9s ease .5s;
+    }
+
+    /* Звонки */
+    .bells { list-style: none; }
+    .bells li { display: flex; align-items: baseline; gap: 12px; padding: 7px 10px; border-bottom: 2px dashed var(--grid); transition: background .3s ease; }
+    .bells li:last-child { border-bottom: 0; }
+    .bells .num { min-width: 22px; font-family: var(--hand); font-size: 26px; line-height: 1; color: var(--margin); text-align: right; }
+    .bells .name { flex: 1; font-weight: 800; }
+    .bells .time { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .bells li.gap { padding-top: 3px; padding-bottom: 3px; font-size: 14px; border-bottom: 0; }
+    .bells li.gap .name { font-weight: 600; opacity: .75; }
+    .bells li.big { background: var(--hl); border-radius: 8px; }
+    .bells li.big .name { opacity: 1; font-weight: 800; }
+    .bells li.now { background: var(--marker); color: #1e2338; border-radius: 8px; }
+    .bells li.now .num { color: #e5484d; }
+    .bells li.now .name { opacity: 1; }
+
+    /* Открытая карточка */
+    #overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0); visibility: hidden; transition: background .45s ease, visibility .45s; }
+    #overlay.show { background: rgba(14, 22, 66, .82); visibility: visible; }
+    #card {
+      position: fixed; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 16px;
+      overflow: hidden; background: var(--solid); color: #fff; font-family: var(--hand); font-weight: 700; cursor: pointer;
+      border: 3px solid var(--marker);
+      transition: top .45s ease, left .45s ease, width .45s ease, height .45s ease, border-radius .45s ease, font-size .45s ease;
+    }
+
+    #card .name.starosta { color: var(--marker); }
+    #card .role { font-family: var(--body); font-weight: 800; font-size: .28em; letter-spacing: 2px; text-transform: uppercase; color: var(--marker); margin-top: .3em; }
+
+    /* Расписание */
+    .week { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 14px; }
+    .day { position: relative; border: 2px solid var(--ink); border-radius: 14px; padding: 12px 14px 8px; background: var(--card); transition: transform .2s ease; }
+    .day:hover { transform: translateY(-4px) rotate(-.7deg); }
+    .day h3 { font-family: var(--hand); font-size: 28px; line-height: 1.1; color: var(--ink); margin-bottom: 6px; }
+    .day ol { list-style: none; counter-reset: l; }
+    .day li { counter-increment: l; display: flex; gap: 10px; padding: 5px 0; border-bottom: 1px dashed var(--grid); font-weight: 600; }
+    .day li:last-child { border-bottom: 0; }
+    .day li::before { content: counter(l); min-width: 18px; font-family: var(--hand); font-size: 22px; line-height: 1.2; color: var(--margin); text-align: right; }
+    .day.empty { border-style: dashed; opacity: .75; }
+    .day.empty p { font-weight: 600; padding-bottom: 8px; }
+    .day.today { background: var(--marker); color: #1e2338; box-shadow: 4px 4px 0 var(--ink); }
+    .day.today h3 { color: #132a85; }
+    .day.today li { border-bottom-color: rgba(29, 63, 191, .25); }
+    .day.today li::before { color: #e5484d; }
+    .day.today::after { content: ""; position: absolute; inset: -2px; border-radius: inherit; pointer-events: none; animation: glow 2.2s ease-out infinite; }
+    .note { margin-top: 14px; font-size: 14px; opacity: .7; }
+
+    /* Легенды */
+    .legends { list-style: none; display: flex; flex-wrap: wrap; gap: 14px; }
+    .legends li {
+      display: flex; align-items: center; gap: 10px; padding: 10px 20px; font: 800 20px var(--body);
+      color: var(--marker); background: var(--solid); border: 2px solid var(--solid-2); border-radius: 14px;
+      box-shadow: 4px 4px 0 var(--marker); transition: transform .2s ease;
+    }
+    .legends li::before { content: "★"; display: inline-block; font-size: 22px; animation: spin 5s linear infinite; }
+    .legends li:nth-child(2)::before { animation-direction: reverse; }
+    .legends li:hover { transform: translateY(-3px) rotate(-1.5deg); }
+
+    /* Подвал */
+    footer { text-align: center; padding: 32px 20px 26px; background: var(--foot); color: #fff; }
+    .contacts { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .contact {
+      display: inline-flex; align-items: center; gap: 12px; padding: 8px 18px 8px 8px; text-decoration: none;
+      color: #fff; background: rgba(255, 255, 255, .1); border: 2px solid rgba(255, 255, 255, .25); border-radius: 999px;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+    .contact:hover { transform: translateY(-3px); background: rgba(255, 255, 255, .18); border-color: var(--marker); }
+    .contact:focus-visible { outline: 3px solid var(--marker); outline-offset: 3px; }
+    .contact:hover .ico { animation: bounce .5s ease; }
+    .ico { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 50%; }
+    .ico svg { width: 24px; height: 24px; }
+    .ico.insta { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+    .ico.wa { background: #25d366; }
+    .label { display: flex; flex-direction: column; text-align: left; font-weight: 800; line-height: 1.25; }
+    .label small { font-size: 12px; font-weight: 600; opacity: .7; }
+    .author { margin-top: 18px; padding-top: 14px; border-top: 2px dashed rgba(255, 255, 255, .25); }
+
+    /* Появление разделов при прокрутке */
+    .js section:not(.in) h2, .js section:not(.in) .stagger { opacity: 0; }
+    section.in h2 { animation: slide-r .6s cubic-bezier(.2, .8, .2, 1) backwards; }
+    section.in .stagger { animation: rise .55s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(var(--i) * 40ms); }
+    section.in #students li.stagger { animation: pop-l .6s cubic-bezier(.34, 1.56, .64, 1) backwards; animation-delay: calc(var(--i) * 45ms); }
+    section.in #students li.stagger:nth-child(even) { animation-name: pop-r; }
+    .js section:not(.in) .teacher span { background-size: 0% 45%; }
+
+    @keyframes logo-in { from { opacity: 0; transform: rotate(-40deg) scale(.4); } to { opacity: 1; transform: rotate(-6deg) scale(1); } }
+    @keyframes swing {
+      0%, 100% { transform: rotate(-6deg) translateY(0); box-shadow: 5px 5px 0 var(--marker); }
+      50% { transform: rotate(3deg) translateY(-8px); box-shadow: 9px 12px 0 var(--marker); }
+    }
+    @keyframes ring { 0% { opacity: .9; transform: scale(1); } 100% { opacity: 0; transform: scale(1.55); } }
+    @keyframes word-in { from { opacity: 0; transform: translateY(36px) rotate(4deg); } to { opacity: 1; transform: none; } }
+    @keyframes float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-18px) rotate(25deg); } }
+    @keyframes twinkle { 0%, 100% { opacity: .3; } 50% { opacity: .85; } }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+    @keyframes slide-r { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: none; } }
+    @keyframes slide-down { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: none; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
+    @keyframes pop-l { from { opacity: 0; transform: translateX(-40px) scale(.8); } to { opacity: 1; transform: none; } }
+    @keyframes pop-r { from { opacity: 0; transform: translateX(40px) scale(.8); } to { opacity: 1; transform: none; } }
+    @keyframes num-wave {
+      0%, 12%, 100% { translate: 0 0; color: var(--margin); }
+      6% { translate: 0 -6px; color: var(--ink-dark); }
+    }
+    @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+    @keyframes glow { 0% { box-shadow: 0 0 0 0 rgba(255, 224, 102, .8); } 100% { box-shadow: 0 0 0 16px rgba(255, 224, 102, 0); } }
+    @keyframes dot-pulse { 0% { box-shadow: 0 0 0 0 rgba(var(--pulse, 127, 127, 127), .7); } 100% { box-shadow: 0 0 0 12px rgba(var(--pulse, 127, 127, 127), 0); } }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-7px) rotate(-8deg); } 70% { transform: translateY(0) rotate(4deg); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 520px) {
+      section { padding: 22px 16px 22px 44px; }
+      section::before { left: 28px; }
+      .logo { width: 80px; height: 80px; font-size: 42px; border-radius: 22px; }
+      .cover { gap: 16px; }
+      #liveMain { font-size: 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .js section:not(.in) h2, .js section:not(.in) .stagger { opacity: 1; }
+      .js section:not(.in) .teacher span { background-size: 100% 45%; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span class="spark" aria-hidden="true" style="left:5%; top:16%; --s:24px; --t:5s; --d:0s">★</span>
+    <span class="spark" aria-hidden="true" style="left:20%; top:72%; --s:16px; --t:6s; --d:-2s; --c:var(--ink)">★</span>
+    <span class="spark" aria-hidden="true" style="left:44%; top:8%; --s:14px; --t:4.5s; --d:-1s; --c:var(--ink)">★</span>
+    <span class="spark" aria-hidden="true" style="left:74%; top:76%; --s:22px; --t:5.5s; --d:-3s">★</span>
+    <span class="spark" aria-hidden="true" style="left:91%; top:20%; --s:18px; --t:6.5s; --d:-4s; --c:var(--ink)">★</span>
+    <div class="cover">
+      <div class="logo">7-А</div>
+      <div>
+        <h1><span class="w" style="--d:0">7-А</span> <span class="w" style="--d:1">классынын</span> <span class="w" style="--d:2">сайты</span></h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="ticker" aria-hidden="true"><div class="track"><span></span><span></span></div></div>
+
+  <main>
+    <div class="live" id="live" data-state="idle">
+      <div class="live-row">
+        <span class="dot"></span>
+        <div>
+          <b id="liveMain">…</b>
+          <span id="liveSub"></span>
+        </div>
+      </div>
+      <div class="bar"><i id="liveBar"></i></div>
+    </div>
+
+    <section>
+      <h2><span>Окуучулардын тизмеги</span></h2>
+      <ol id="students">
+        <li>Нуртилек Азамбеков</li>
+        <li>Айбийке Азатбекова</li>
+        <li>Самира Алымсеитова</li>
+        <li>Элиза Абдигапарова</li>
+        <li>Умар Акимолиев</li>
+        <li>Залкар Азаматов</li>
+        <li>Жаңылмырза Акимбаева</li>
+        <li data-role="староста">Акылай Бакирова</li>
+        <li>Жанат Белекова</li>
+        <li>Алихан Бахтияров</li>
+        <li>Алтай Бекболотов</li>
+        <li>Нурболсун Жуманазаров</li>
+        <li>Фатима Жумагул кызы</li>
+        <li>Алия Иличбекова</li>
+        <li>Умар Калилов</li>
+        <li>Ширин Кадыркулова</li>
+        <li>Бакай Маратов</li>
+        <li>Жылдыз Максатова</li>
+        <li>Мардан Майрамбеков</li>
+        <li>Нураман Нуридинов</li>
+        <li>Надырбаев Эламан</li>
+        <li>Аяна Нейматова</li>
+        <li>Аман Өмүрбеков</li>
+        <li>Адилет Сагындыков</li>
+        <li>Нураида Султанова</li>
+        <li>Даниель Табышов</li>
+        <li>Мээрим Тиленбаева</li>
+        <li>Малика Уракунова</li>
+        <li>Асема Эркинова</li>
+        <li>Тагай Эркинбеков</li>
+
+      </ol>
+    </section>
+
+    <section>
+      <h2><span>Сабактар</span></h2>
+      <ul class="lessons">
+        <li>Орус Тили</li>
+        <li>Орус Адабияты</li>
+        <li>Кыргыз Тили</li>
+        <li>Кыргыз Адбияты</li>
+        <li>Математика</li>
+        <li>Кыргызстандын Тарыхы</li>
+        <li>Диндердин Өнүгүү Тарыхы</li>
+        <li>Химия</li>
+        <li>География</li>
+        <li>Физика</li>
+        <li>Информатика</li>
+        <li>Дене Тарбия</li>
+        <li>Адам Жана Коом</li>
+        <li>Биология</li>
+        <li>Чет Тили</li>
+        <!-- Добавляй сюда уроки: <li>Название</li> -->
+      </ul>
+    </section>
+
+    <section>
+      <h2><span>Коңгуроо графиги</span></h2>
+      <ol class="bells" id="bells"></ol>
+      <p class="note">Экинчи смена. Чоң танапис — 3-сабактан кийин.</p>
+    </section>
+
+    <section>
+      <h2><span>Расписание 7-А</span></h2>
+      <div class="week">
+        <div class="day" data-day="1"><h3>Понедельник</h3><ol><li>Математика</li><li>Орус тили</li><li>Чет тили</li><li>Физика</li><li>Тарых</li><li>Химия</li></ol></div>
+        <div class="day" data-day="2"><h3>Вторник</h3><ol><li>Кыргыз тили</li><li>Орус тили</li><li>География</li><li>Биология</li><li>Тарых</li><li>Информатика</li></ol></div>
+        <div class="day" data-day="3"><h3>Среда</h3><ol><li>Математика</li><li>Кыргыз адабияты</li><li>Чет тили</li><li>Адам жана коом</li><li>Биология</li><li>География</li></ol></div>
+        <div class="day" data-day="4"><h3>Четверг</h3><ol><li>Кыргыз тили</li><li>Адам жана коом</li><li>Математика</li><li>Информатика</li><li>Физика</li><li>Дене тарбия</li></ol></div>
+        <div class="day" data-day="5"><h3>Пятница</h3><ol><li>Математика</li><li>Кыргыз тили</li><li>Кыргыз адабияты</li><li>Дин өнүгүү тар</li><li>Дене тарбия</li><li>Орус адабияты</li></ol></div>
+        <div class="day empty" data-day="6"><h3>Суббота</h3><p>Сабак жок</p></div>
+      </div>
+      <p class="note">Бүгүнкү күн сары менен боёлуу</p>
+    </section>
+
+    <section>
+      <h2><span>Класс Жетекчиси</span></h2>
+      <p class="teacher"><span>Ыманкулова Жанара Саданбековна</span></p>
+    </section>
+
+    <section>
+      <h2><span>Легенды</span></h2>
+      <ul class="legends">
+        <li>Ильясов Эрбол</li>
+        <li>Эргешов Баатыр</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <div class="contacts">
+      <a class="contact" href="https://instagram.com/aman.bro228" target="_blank" rel="noopener">
+        <span class="ico insta">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="2" y="2" width="20" height="20" rx="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+          </svg>
+        </span>
+        <span class="label"><small>Instagram</small>@aman.bro228</span>
+      </a>
+      <a class="contact" href="https://wa.me/996701806620" target="_blank" rel="noopener">
+        <span class="ico wa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2.5a9.5 9.5 0 0 0-8.2 14.3L2.5 21.5l4.8-1.3A9.5 9.5 0 1 0 12 2.5z"/>
+            <g transform="translate(7 7) scale(.42)" stroke-width="3.4">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </g>
+          </svg>
+        </span>
+        <span class="label"><small>WhatsApp</small>+996 701 806 620</span>
+      </a>
+    </div>
+    <p class="author">Сайттын автору: Өмүрбеков Аман</p>
+  </footer>
+
+  <div id="overlay"><div id="card" tabindex="0"></div></div>
+
+  <script>
+    var overlay = document.getElementById('overlay');
+    var card = document.getElementById('card');
+    var currentBtn = null;
+
+    document.querySelectorAll('#students li').forEach(function (li) {
+      var full = li.textContent.trim();
+      var role = li.getAttribute('data-role') || '';
+      if (!full) { li.remove(); return; } // пустые строки пропускаем
+      var parts = full.split(/\s+/);
+      var short = parts[0] + (parts[1] ? ' ' + parts[1][0].toUpperCase() + '.' : ''); // имя + инициал фамилии
+      var btn = document.createElement('button');
+      btn.textContent = short;
+      btn.setAttribute('aria-label', role ? full + ', ' + role : full);
+      if (role) btn.classList.add('starosta');
+      li.textContent = '';
+      li.appendChild(btn);
+      btn.addEventListener('click', function () { openCard(btn, full, role); });
+    });
+
+    var today = new Date().getDay(); // 1 = понедельник ... 6 = суббота
+    var todayCard = document.querySelector('.day[data-day="' + today + '"]');
+    if (todayCard) todayCard.classList.add('today');
+
+    /* ===== Звонки ===== */
+    // Меняй цифры здесь, всё остальное посчитается само.
+    var FIRST_START = 13 * 60 + 5; // первый урок начинается в 13:05
+    var LESSON = 45;               // длина урока, минут
+    var SHORT_BREAK = 5;           // обычная перемена, минут
+    var BIG_BREAK = 10;            // большая перемена, минут
+    var BIG_AFTER = 3;             // большая перемена после этого урока
+    var LESSONS = 6;               // всего уроков (шестой заканчивается в 18:05)
+
+    var periods = [];
+    (function () {
+      var t = FIRST_START;
+      for (var n = 1; n <= LESSONS; n++) {
+        periods.push({ type: 'lesson', n: n, from: t, to: t + LESSON });
+        t += LESSON;
+        if (n < LESSONS) {
+          var big = n === BIG_AFTER;
+          var len = big ? BIG_BREAK : SHORT_BREAK;
+          periods.push({ type: 'break', big: big, after: n, from: t, to: t + len });
+          t += len;
+        }
+      }
+    })();
+    var DAY_END = periods[periods.length - 1].to;
+
+    function hm(m) { var mm = m % 60; return Math.floor(m / 60) + ':' + (mm < 10 ? '0' : '') + mm; }
+    function dur(sec) {
+      var mins = Math.max(1, Math.ceil(sec / 60));
+      if (mins >= 60) { var h = Math.floor(mins / 60), m = mins % 60; return h + ' саат' + (m ? ' ' + m + ' мүнөт' : ''); }
+      return mins + ' мүнөт';
+    }
+
+    var bellsEl = document.getElementById('bells');
+    var rowEls = periods.map(function (p) {
+      var li = document.createElement('li');
+      li.className = p.type === 'lesson' ? 'lesson' : (p.big ? 'gap big' : 'gap');
+      var num = document.createElement('span'); num.className = 'num'; num.textContent = p.type === 'lesson' ? p.n : '';
+      var name = document.createElement('span'); name.className = 'name';
+      name.textContent = p.type === 'lesson' ? 'сабак' : (p.big ? 'чоң танапис · ' : 'танапис · ') + (p.to - p.from) + ' мүнөт';
+      var time = document.createElement('span'); time.className = 'time'; time.textContent = hm(p.from) + ' – ' + hm(p.to);
+      li.appendChild(num); li.appendChild(name); li.appendChild(time);
+      bellsEl.appendChild(li);
+      return li;
+    });
+
+    var live = document.getElementById('live');
+    var liveMain = document.getElementById('liveMain');
+    var liveSub = document.getElementById('liveSub');
+    var liveBar = document.getElementById('liveBar');
+    var lastKey = '';
+
+    function tick() {
+      var now = new Date();
+      var day = now.getDay();
+      var sec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      var startSec = FIRST_START * 60, endSec = DAY_END * 60;
+      var state = 'idle', main = '', sub = '', pct = 0, cur = -1;
+
+      if (day === 0 || day === 6) {
+        main = 'Бүгүн сабак жок';
+        sub = 'Кийинки сабак — дүйшөмбүдө, саат ' + hm(FIRST_START) + 'те';
+      } else if (sec < startSec) {
+        main = 'Сабактар саат ' + hm(FIRST_START) + 'те башталат';
+        sub = 'Башталганга чейин ' + dur(startSec - sec);
+      } else if (sec >= endSec) {
+        main = 'Бүгүн сабактар бүттү';
+        sub = day === 5 ? 'Кийинки сабак — дүйшөмбүдө, саат ' + hm(FIRST_START) + 'те'
+                        : 'Эртең сабак саат ' + hm(FIRST_START) + 'те башталат';
+      } else {
+        for (var i = 0; i < periods.length; i++) {
+          if (sec >= periods[i].from * 60 && sec < periods[i].to * 60) { cur = i; break; }
+        }
+        var p = periods[cur];
+        var left = p.to * 60 - sec;
+        pct = (sec - p.from * 60) / ((p.to - p.from) * 60) * 100;
+        if (p.type === 'lesson') {
+          state = 'lesson';
+          main = 'Азыр ' + p.n + '-сабак жүрүп жатат';
+          if (p.n === LESSONS) sub = 'Сабактар бүткөнгө чейин ' + dur(left);
+          else sub = (periods[cur + 1].big ? 'Чоң танаписке' : 'Танаписке') + ' чейин ' + dur(left);
+        } else {
+          state = 'break';
+          main = p.big ? 'Азыр чоң танапис' : 'Азыр танапис';
+          sub = (p.after + 1) + '-сабакка чейин ' + dur(left);
+        }
+      }
+
+      var key = state + '|' + main + '|' + sub;
+      if (key !== lastKey) {
+        lastKey = key;
+        live.setAttribute('data-state', state);
+        liveMain.textContent = main;
+        liveSub.textContent = sub;
+        rowEls.forEach(function (el, idx) { el.classList.toggle('now', idx === cur); });
+      }
+      liveBar.style.width = (state === 'idle' ? 0 : pct) + '%';
+    }
+    tick();
+    setInterval(tick, 1000);
+
+    /* ===== Анимации ===== */
+    document.querySelectorAll('.track span').forEach(function (t) { t.textContent = '7-А ★ '.repeat(40); });
+
+    function stagger(sel) {
+      document.querySelectorAll(sel).forEach(function (el, i) { el.classList.add('stagger'); el.style.setProperty('--i', i); });
+    }
+    stagger('#students li'); stagger('ul.lessons li'); stagger('.bells li'); stagger('.week .day'); stagger('.legends li');
+    // номера учеников нужны для волны; --i уже выставлен выше
+
+    var sections = document.querySelectorAll('main section');
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (items) {
+        items.forEach(function (it) {
+          if (it.isIntersecting) { it.target.classList.add('in'); io.unobserve(it.target); }
+        });
+      }, { threshold: 0.08 });
+      sections.forEach(function (sec) { io.observe(sec); });
+    } else {
+      sections.forEach(function (sec) { sec.classList.add('in'); });
+    }
+
+    function setSmall(btn) {
+      var r = btn.getBoundingClientRect();
+      card.style.top = r.top + 'px';
+      card.style.left = r.left + 'px';
+      card.style.width = r.width + 'px';
+      card.style.height = r.height + 'px';
+      card.style.borderRadius = '12px';
+      card.style.fontSize = '16px';
+    }
+
+    function openCard(btn, full, role) {
+      currentBtn = btn;
+      card.textContent = '';
+      var nameEl = document.createElement('div');
+      nameEl.className = 'name' + (role ? ' starosta' : '');
+      nameEl.textContent = full;
+      card.appendChild(nameEl);
+      if (role) {
+        var roleEl = document.createElement('div');
+        roleEl.className = 'role';
+        roleEl.textContent = role;
+        card.appendChild(roleEl);
+      }
+      card.style.transition = 'none';
+      setSmall(btn);
+      card.offsetWidth; // перезапуск анимации
+      card.style.transition = '';
+      overlay.classList.add('show');
+      card.style.top = '6vh';
+      card.style.left = '5vw';
+      card.style.width = '90vw';
+      card.style.height = '88vh';
+      card.style.borderRadius = '28px';
+      card.style.fontSize = 'clamp(40px, 12vw, 110px)';
+      card.focus();
+    }
+
+    function closeCard() {
+      if (!currentBtn) return;
+      setSmall(currentBtn);
+      overlay.classList.remove('show');
+      currentBtn.focus();
+      currentBtn = null;
+    }
+
+    overlay.addEventListener('click', closeCard);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeCard(); });
+  </script>
+</body>
+</html>
